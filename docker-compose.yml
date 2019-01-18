@@ -12,6 +12,7 @@ services:
       - backend
   
   web:
+    restart: always
     build:
       context: ./web
       dockerfile: DOCKERFILE
@@ -30,7 +31,7 @@ services:
     command: gunicorn djocker.wsgi:application -w 2 -b :8000
   
   nginx:
-    restart: unless-stopped
+    restart: always
     build:
       context: ./nginx
       dockerfile: DOCKERFILE
