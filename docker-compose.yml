@@ -1,0 +1,54 @@
+version: '3.7'
+
+services:
+  db:
+    restart: unless-stopped
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data/
+    networks: 
+      - backend
+  
+  web:
+    restart: always
+    build:
+      context: ./web
+      dockerfile: DOCKERFILE
+    env_file:
+      - .env
+    expose:
+      - "8000"
+    depends_on:
+      - db
+    volumes:
+      - ./web:/usr/src/app
+      - static-volume:/usr/src/app/static
+    networks: 
+      - backend
+      - frontend
+    command: gunicorn djocker.wsgi:application -w 2 -b :8000
+  
+  nginx:
+    restart: always
+    build:
+      context: ./nginx
+      dockerfile: DOCKERFILE
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - web
+    volumes:
+      - static-volume:/usr/src/app/static
+    networks: 
+      - frontend
+
+volumes:
+  static-volume:
+  pgdata:
+
+networks: 
+  backend:
+  frontend:
